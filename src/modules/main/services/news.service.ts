@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import * as moment from 'moment'
+import { Brackets, Repository } from 'typeorm'
 
 import { NewsToItemById, NewsToListItem } from 'src/modules/main/interfaces/news'
 
@@ -18,6 +19,7 @@ export class NewsService {
   async getNewsById(id: string): Promise<{ data: NewsToItemById }> {
     const news = await this.newsRepository.findOne({
       where: { id },
+      relations: ['newsCategory'],
     })
     if (!news) {
       throw new NotFoundException('Not found')
@@ -30,17 +32,53 @@ export class NewsService {
     return { data: this.newsDataMapper.newsGetById(news) }
   }
 
-  async getAll(): Promise<{ data: NewsToListItem[] }> {
-    const newsList = await this.newsRepository.find({
-      where: { published: true },
-      order: {
-        createdAt: 'DESC',
-      },
-    })
-    if (!newsList) {
+  async getAll(
+    searchTerm?: string,
+    publishedBefore?: string,
+    publishedAfter?: string,
+    newsCategory?: string,
+  ): Promise<{ data: NewsToListItem[] }> {
+    const newsQuery = this.newsRepository.createQueryBuilder('news')
+
+    newsQuery.where('news.published = :published', { published: true })
+
+    if (searchTerm) {
+      newsQuery.andWhere(
+        new Brackets((qb) => {
+          qb.where('news.name LIKE :searchTerm', { searchTerm: `%${searchTerm}%` }).orWhere(
+            'news.description LIKE :searchTerm',
+            { searchTerm: `%${searchTerm}%` },
+          )
+        }),
+      )
+    }
+
+    if (publishedAfter) {
+      const afterDate = moment(publishedAfter).toDate()
+
+      newsQuery.andWhere('news.publishedAt >= :publishedAfter', { publishedAfter: afterDate })
+    }
+
+    if (publishedBefore) {
+      const beforeDate = moment(publishedBefore).toDate()
+
+      newsQuery.andWhere('news.publishedAt <= :publishedBefore', { publishedBefore: beforeDate })
+    }
+
+    if (newsCategory) {
+      newsQuery
+        .leftJoinAndSelect('news.newsCategory', 'newsCategory', 'newsCategory.title LIKE :newsCategory', {
+          newsCategory: `%${newsCategory}%`,
+        })
+        .andWhere('newsCategory.title LIKE :newsCategory', { newsCategory: `%${newsCategory}%` })
+    }
+
+    const newsList = await newsQuery.getMany()
+
+    if (!newsList.length) {
       throw new NotFoundException('Not found')
     }
 
-    return { data: newsList.map((project) => this.newsDataMapper.newsGetList(project)) }
+    return { data: newsList.map((news) => this.newsDataMapper.newsGetList(news)) }
   }
 }

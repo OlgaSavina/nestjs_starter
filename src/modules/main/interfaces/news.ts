@@ -1,3 +1,8 @@
+export interface NewsCategory {
+  title: string
+  createdAt: string
+}
+
 export interface NewsToListItem {
   id
   name: string
@@ -5,6 +10,7 @@ export interface NewsToListItem {
   createdAt: string
   publishedAt: Date
   published: boolean
+  newsCategory: NewsCategory | null
 }
 
 export interface NewsToItemById {
@@ -14,4 +20,5 @@ export interface NewsToItemById {
   createdAt: string
   publishedAt: Date
   published: boolean
+  newsCategory: NewsCategory | null
 }
