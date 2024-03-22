@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 
-import { NewsCategory } from './news-category.entity'
+import { NewsCategoryEntity } from './news-category.entity'
 import { NewsTranslationEntity } from './news-translation.entity'
 
 @Entity()
@@ -9,16 +9,7 @@ export class NewsEntity {
   id: string
 
   @OneToMany(() => NewsTranslationEntity, (translation) => translation.news)
-  translations: NewsTranslationEntity[]
-
-  @Column()
-  name: string
-
-  @Column({
-    type: 'text',
-    nullable: true,
-  })
-  description: string
+  translationList: NewsTranslationEntity[]
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: string
@@ -27,11 +18,17 @@ export class NewsEntity {
   publishedAt: Date
 
   @Column({ default: false })
-  published: boolean
+  isPublished: boolean
 
-  @ManyToOne(() => NewsCategory, { eager: true, nullable: true })
+  @Column({ nullable: true })
+  slug: string
+
+  @Column({ default: '' })
+  thumbnailUrl: string
+
+  @ManyToOne(() => NewsCategoryEntity, { eager: true, nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'categoryId' })
-  newsCategory: NewsCategory
+  newsCategory: NewsCategoryEntity
 
   @Column({ nullable: true })
   categoryId: string

@@ -1,12 +1,22 @@
 export interface NewsCategory {
-  title: string
+  // title: string
+  createdAt: string
+}
+
+export interface NewsCategoryToListItem {
+  // /title: string
+  createdAt: string
+}
+
+export interface NewsCategoryToItemById {
+  //  title: string
   createdAt: string
 }
 
 export interface NewsToListItem {
   id
-  name: string
-  description: string
+  // name: string
+  // description: string
   createdAt: string
   publishedAt: Date
   published: boolean
@@ -15,10 +25,10 @@ export interface NewsToListItem {
 
 export interface NewsToItemById {
   id
-  name: string
-  description: string
+  // name: string
+  // description: string
   createdAt: string
   publishedAt: Date
-  published: boolean
+  isPublished: boolean
   newsCategory: NewsCategory | null
 }

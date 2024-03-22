@@ -1,20 +1,27 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 
-import { NewsCategory } from './news-category.entity'
+import { NewsCategoryEntity } from './news-category.entity'
 
 @Entity()
 export class NewsCategoryTranslationEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @ManyToOne(() => NewsCategory, (category) => category.translations)
-  category: NewsCategory
+  @ManyToOne(() => NewsCategoryEntity, { eager: true, nullable: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'newsCategoryId' })
+  category: NewsCategoryEntity
 
-  @Column()
-  language: string
+  @Column({ nullable: true })
+  lang: string
 
   @Column()
   title: string
+
+  @Column({ nullable: true })
+  newsCategoryId: string
+
+  @Column({ nullable: true })
+  description: string
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: string

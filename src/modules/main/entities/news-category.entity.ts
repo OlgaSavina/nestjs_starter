@@ -1,17 +1,22 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 
-import { NewsTranslationEntity } from './news-translation.entity'
+import { NewsCategoryTranslationEntity } from './news-category-translation.entity'
 
 @Entity()
-export class NewsCategory {
+export class NewsCategoryEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @OneToMany(() => NewsTranslationEntity, (translation) => translation.news)
-  translations: NewsTranslationEntity[]
+  @OneToMany(() => NewsCategoryTranslationEntity, (translationList) => translationList.category, {
+    onDelete: 'CASCADE',
+  })
+  translationList: NewsCategoryTranslationEntity[]
 
-  @Column()
-  title: string
+  @Column({ name: 'published', default: false })
+  isPublished: boolean
+
+  @Column({ name: 'published_at', nullable: true })
+  publishedAt: Date
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: string
