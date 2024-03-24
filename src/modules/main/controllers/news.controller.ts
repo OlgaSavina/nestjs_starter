@@ -13,10 +13,10 @@ import {
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger'
 import * as moment from 'moment'
 
-import { NewsCreateDto } from '../dto/requests/news-create.dto'
-import { NewsUpdateDto } from '../dto/requests/news-update.dto'
+import { NewsCreateDto } from 'src/modules/main/dto/requests/news-create.dto'
+import { NewsUpdateDto } from 'src/modules/main/dto/requests/news-update.dto'
 
-import { NewsToItemById, NewsToListItem } from 'src/modules/main/interfaces/news'
+import { NewsEntity } from 'src/modules/main/entities/news.entity'
 
 import { NewsService } from 'src/modules/main/services/news.service'
 
@@ -40,7 +40,7 @@ export class NewsController {
     @Query('newsCategory') newsCategory?: string,
     @Query('pageSize') pageSize?: number,
     @Query('page') page?: number,
-  ) {
+  ): Promise<{ data: NewsEntity[]; meta: object }> {
     if (publishedBefore && !moment(publishedBefore, 'YYYY-MM-DD', true).isValid()) {
       throw new BadRequestException('Invalid date format. Use YYYY-MM-DD.')
     }
@@ -56,7 +56,7 @@ export class NewsController {
   @ApiOperation({ summary: 'Getting one news by id' })
   @ApiResponse({ status: 200, description: 'OK' })
   @ApiResponse({ status: 404, description: 'Not found' })
-  async getNewsById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async getNewsById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<{ data: NewsEntity }> {
     return { data: await this.newsService.getNewsById(id) }
   }
 
@@ -64,7 +64,7 @@ export class NewsController {
   @ApiBody({
     type: NewsCreateDto,
   })
-  async createNews(@Body() newsCreateDto: NewsCreateDto) {
+  async createNews(@Body() newsCreateDto: NewsCreateDto): Promise<any> {
     const createdNews = await this.newsService.createNews(newsCreateDto)
 
     return { ...createdNews, translationList: newsCreateDto.translationList }
@@ -82,7 +82,10 @@ export class NewsController {
   @ApiOperation({ summary: 'Updating news data' })
   @ApiResponse({ status: 202, description: 'Updated' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async updateChat(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Body() newsUpdateDto: NewsUpdateDto) {
+  async updateChat(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() newsUpdateDto: NewsUpdateDto,
+  ): Promise<void> {
     return await this.newsService.updateNews(id, newsUpdateDto)
   }
 }

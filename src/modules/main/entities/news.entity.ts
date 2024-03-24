@@ -26,10 +26,10 @@ export class NewsEntity {
   @Column({ default: '' })
   thumbnailUrl: string
 
-  @ManyToOne(() => NewsCategoryEntity, { eager: true, nullable: true, onDelete: 'CASCADE' })
+  @ManyToOne(() => NewsCategoryEntity, { eager: true, nullable: true, onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   @JoinColumn({ name: 'categoryId' })
   newsCategory: NewsCategoryEntity
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, onUpdate: 'CASCADE' })
   categoryId: string
 }

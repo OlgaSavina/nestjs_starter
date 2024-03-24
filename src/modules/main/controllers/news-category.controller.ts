@@ -1,9 +1,12 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common'
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
-import { NewsCategoryCreateDto } from '../dto/requests/news-category-create.dto'
-import { NewsCategoryUpdateDto } from '../dto/requests/news-category-update.dto'
-import { NewsCategoryService } from '../services/news-category.service'
+import { NewsCategoryCreateDto } from 'src/modules/main/dto/requests/news-category-create.dto'
+import { NewsCategoryUpdateDto } from 'src/modules/main/dto/requests/news-category-update.dto'
+
+import { NewsCategoryEntity } from 'src/modules/main/entities/news-category.entity'
+
+import { NewsCategoryService } from 'src/modules/main/services/news-category.service'
 
 @ApiTags('News Category')
 @Controller('news-category')
@@ -13,7 +16,7 @@ export class NewsCategoryController {
   @Get('/list')
   @ApiOperation({ summary: 'Get all news categories' })
   @ApiResponse({ status: 200, description: 'OK' })
-  async getAll() /* : Promise<{ data: NewsCategoryToListItem[] }>*/ {
+  async getAll(): Promise<{ data: NewsCategoryEntity[]; meta: object }> {
     const data = await this.newsCategoryService.getAll()
 
     return { data, meta: { total: 10 } }
@@ -22,17 +25,19 @@ export class NewsCategoryController {
   @Get('/reference')
   @ApiOperation({ summary: 'Get all news categories' })
   @ApiResponse({ status: 200, description: 'OK' })
-  async getAllCategories() /* : Promise<{ data: NewsCategoryToListItem[] }>*/ {
+  async getAllReferences(): Promise<{ data: NewsCategoryEntity[] }> {
     const data = await this.newsCategoryService.getAll()
 
-    return data
+    return { data: data }
   }
 
   @Get('item/:id')
   @ApiOperation({ summary: 'Getting one news category by id' })
   @ApiResponse({ status: 200, description: 'OK' })
   @ApiResponse({ status: 404, description: 'Not found' })
-  async getNewsCategoryById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async getNewsCategoryById(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<{ data: NewsCategoryEntity }> {
     return { data: await this.newsCategoryService.getNewsCategoryById(id) }
   }
 
@@ -41,7 +46,7 @@ export class NewsCategoryController {
   @ApiBody({
     type: NewsCategoryCreateDto,
   })
-  async createNewsCategory(@Body() newsCategoryCreateDto: NewsCategoryCreateDto) {
+  async createNewsCategory(@Body() newsCategoryCreateDto: NewsCategoryCreateDto): Promise<any> {
     const createdNewsCategory = await this.newsCategoryService.createNewsCategory(newsCategoryCreateDto)
 
     return { ...createdNewsCategory, translationList: newsCategoryCreateDto.translationList }
@@ -62,7 +67,7 @@ export class NewsCategoryController {
   async updateChat(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() newsCategoryUpdateDto: NewsCategoryUpdateDto,
-  ) {
+  ): Promise<void> {
     return await this.newsCategoryService.updateNewsCategory(id, newsCategoryUpdateDto)
   }
 }

@@ -2,22 +2,23 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
-import { NewsCategoryDataMapper } from '../data-mappers/news-category.data-mapper'
-import { NewsCategoryCreateDto } from '../dto/requests/news-category-create.dto'
-import { NewsCategoryUpdateDto } from '../dto/requests/news-category-update.dto'
-import { NewsCategoryTranslationEntity } from '../entities/news-category-translation.entity'
-import { NewsCategoryEntity } from '../entities/news-category.entity'
+import { NewsCategoryCreateDto } from 'src/modules/main/dto/requests/news-category-create.dto'
+import { NewsCategoryUpdateDto } from 'src/modules/main/dto/requests/news-category-update.dto'
+
+import { NewsCategoryTranslationEntity } from 'src/modules/main/entities/news-category-translation.entity'
+import { NewsCategoryEntity } from 'src/modules/main/entities/news-category.entity'
+
+import { NewsCategoryDataMapper } from 'src/modules/main/data-mappers/news-category.data-mapper'
 
 @Injectable()
 export class NewsCategoryService {
   constructor(
-    private readonly newsCategoryDataMapper: NewsCategoryDataMapper,
     @InjectRepository(NewsCategoryEntity) private newsCategoryRepository: Repository<NewsCategoryEntity>,
     @InjectRepository(NewsCategoryTranslationEntity)
     private newsCategoryTranslationRepository: Repository<NewsCategoryTranslationEntity>,
   ) {}
 
-  async getNewsCategoryById(translationId: string) {
+  async getNewsCategoryById(translationId: string): Promise<NewsCategoryEntity> {
     const newsCategoryTranslation = await this.newsCategoryTranslationRepository.findOne({
       where: { id: translationId },
     })
@@ -34,7 +35,7 @@ export class NewsCategoryService {
     return newsCategory
   }
 
-  async createNewsCategory(newsCategoryCreateDto: NewsCategoryCreateDto) {
+  async createNewsCategory(newsCategoryCreateDto: NewsCategoryCreateDto): Promise<NewsCategoryEntity> {
     const { translationList } = newsCategoryCreateDto
 
     const newsCategory = this.newsCategoryRepository.create()
@@ -59,7 +60,7 @@ export class NewsCategoryService {
     return newsCategory
   }
 
-  async updateNewsCategory(translationId: string, newsCategoryUpdateDto: NewsCategoryUpdateDto) {
+  async updateNewsCategory(translationId: string, newsCategoryUpdateDto: NewsCategoryUpdateDto): Promise<void> {
     const newsCategory = await this.getNewsCategoryById(translationId)
 
     if (!newsCategory) {
@@ -95,7 +96,7 @@ export class NewsCategoryService {
     await this.newsCategoryRepository.remove(newsCategory)
   }
 
-  async getAll() {
+  async getAll(): Promise<NewsCategoryEntity[]> {
     const newsCategoryList = await this.newsCategoryRepository.find({ relations: ['translationList'] })
     if (!newsCategoryList) {
       throw new NotFoundException('Not found')

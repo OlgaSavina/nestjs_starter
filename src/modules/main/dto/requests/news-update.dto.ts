@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { Expose } from 'class-transformer'
+import { Expose, Type } from 'class-transformer'
 import { IsArray, IsBoolean, IsOptional, IsString, IsUUID } from 'class-validator'
+
+import { NewsCategoryCreateDto } from './news-category-create.dto'
 
 import { GenericDto } from 'src/core/abstracts/generic.dto'
 
@@ -27,6 +29,9 @@ class NewsTranslationDto {
 }
 
 export class NewsUpdateDto extends GenericDto {
+  @IsUUID()
+  id: string
+
   @ApiProperty({ example: '2024-03-01' })
   @IsOptional()
   publishedAt?: string
@@ -38,6 +43,11 @@ export class NewsUpdateDto extends GenericDto {
   @ApiProperty({ example: 'a9c72644-7ecd-49b9-b22c-eeffcfd93fa2' })
   @IsOptional()
   categoryId?: string
+
+  @ApiProperty({ type: NewsCategoryCreateDto, required: false })
+  @IsOptional()
+  @Type(() => NewsCategoryCreateDto)
+  newsCategory?: NewsCategoryCreateDto
 
   @IsArray()
   @Expose()

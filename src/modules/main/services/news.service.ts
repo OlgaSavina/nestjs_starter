@@ -3,16 +3,22 @@ import { InjectRepository } from '@nestjs/typeorm'
 import * as moment from 'moment'
 import { Brackets, Repository } from 'typeorm'
 
-import { NewsCreateDto } from '../dto/requests/news-create.dto'
-import { NewsUpdateDto } from '../dto/requests/news-update.dto'
-import { NewsTranslationEntity } from '../entities/news-translation.entity'
+import { NewsCreateDto } from 'src/modules/main/dto/requests/news-create.dto'
+import { NewsUpdateDto } from 'src/modules/main/dto/requests/news-update.dto'
 
+import { NewsCategoryTranslationEntity } from 'src/modules/main/entities/news-category-translation.entity'
+import { NewsTranslationEntity } from 'src/modules/main/entities/news-translation.entity'
 import { NewsEntity } from 'src/modules/main/entities/news.entity'
+
+import { NewsCategoryService } from 'src/modules/main/services/news-category.service'
 
 @Injectable()
 export class NewsService {
   constructor(
     @InjectRepository(NewsEntity) private newsRepository: Repository<NewsEntity>,
+    private newsCategoryService: NewsCategoryService,
+    @InjectRepository(NewsCategoryTranslationEntity)
+    private newsCategoryTranslationRepository: Repository<NewsCategoryTranslationEntity>,
     @InjectRepository(NewsTranslationEntity) private newsTranslationRepository: Repository<NewsTranslationEntity>,
   ) {}
 
@@ -48,13 +54,24 @@ export class NewsService {
     if (searchTerm) {
       newsQuery.andWhere(
         new Brackets((qb) => {
+          qb.where('translation.title LIKE :searchTerm', { searchTerm: `%${searchTerm}%` }).orWhere(
+            'translation.description LIKE :searchTerm',
+            { searchTerm: `%${searchTerm}%` },
+          )
+        }),
+      )
+    }
+
+    /* if (searchTerm) {
+      newsQuery.andWhere(
+        new Brackets((qb) => {
           qb.where('news.name LIKE :searchTerm', { searchTerm: `%${searchTerm}%` }).orWhere(
             'news.description LIKE :searchTerm',
             { searchTerm: `%${searchTerm}%` },
           )
         }),
       )
-    }
+    }*/
 
     if (publishedAfter) {
       const afterDate = moment(publishedAfter).toDate()
@@ -68,12 +85,14 @@ export class NewsService {
       newsQuery.andWhere('news.publishedAt <= :publishedBefore', { publishedBefore: beforeDate })
     }
 
+    newsQuery
+      .leftJoinAndSelect('news.newsCategory', 'newsCategory')
+      .leftJoin('newsCategory.translationList', 'categoryTranslation')
+
     if (newsCategory) {
-      newsQuery
-        .leftJoinAndSelect('news.newsCategory', 'newsCategory', 'newsCategory.title LIKE :newsCategory', {
-          newsCategory: `%${newsCategory}%`,
-        })
-        .andWhere('newsCategory.title LIKE :newsCategory', { newsCategory: `%${newsCategory}%` })
+      newsQuery.andWhere('categoryTranslation.id = :newsCategoryTranslationId', {
+        newsCategoryTranslationId: newsCategory,
+      })
     }
 
     newsQuery.take(pageSize)
@@ -82,7 +101,7 @@ export class NewsService {
     const [newsList, total] = await newsQuery.getManyAndCount()
 
     if (!newsList.length) {
-      throw new NotFoundException('Not found')
+      return { data: [], meta: 0 }
     }
 
     return { data: newsList, meta: { total } }
@@ -100,7 +119,12 @@ export class NewsService {
       publishedAt = new Date()
     }
 
-    await this.newsRepository.update({ id: news.id }, { isPublished: newsUpdateDto.isPublished, publishedAt })
+    const category = await this.newsCategoryService.getNewsCategoryById(newsUpdateDto.newsCategory.id)
+
+    await this.newsRepository.update(
+      { id: news.id },
+      { isPublished: newsUpdateDto.isPublished, publishedAt, categoryId: category.id },
+    )
 
     for (const translation of newsUpdateDto.translationList) {
       if (translation.id) {
@@ -112,8 +136,8 @@ export class NewsService {
   }
 
   async createNews(newsCreateDto: NewsCreateDto): Promise<NewsEntity> {
-    const { publishedAt, categoryId, translationList } = newsCreateDto
-    const news = this.newsRepository.create({ publishedAt, categoryId })
+    const { publishedAt, categoryId, newsCategory, translationList } = newsCreateDto
+    const news = this.newsRepository.create({ publishedAt, categoryId, newsCategory })
 
     await this.newsRepository.save(news)
 
