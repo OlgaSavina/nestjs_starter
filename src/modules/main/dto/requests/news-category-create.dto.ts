@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Expose } from 'class-transformer'
-import { IsArray, IsString, IsUUID } from 'class-validator'
+import { IsArray, IsOptional, IsString, IsUUID } from 'class-validator'
 
 import { GenericDto } from 'src/core/abstracts/generic.dto'
 
@@ -23,7 +23,8 @@ class TranslationDto {
 
 export class NewsCategoryCreateDto extends GenericDto {
   @IsUUID()
-  id: string
+  @IsOptional()
+  id?: string
 
   @ApiProperty({ example: [{ title: 'Weather' }] })
   @IsArray()

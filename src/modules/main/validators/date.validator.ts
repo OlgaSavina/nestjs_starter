@@ -1,9 +1,8 @@
 import { ValidationArguments, registerDecorator } from 'class-validator'
 
 function isValidISODate(value: any): boolean {
-    return !isNaN(Date.parse(value)) && new Date(value).toISOString() === value
-  }
-  
+  return !isNaN(Date.parse(value)) && new Date(value).toISOString() === value
+}
 
 export function MinDateISO(minYears: number): (object: object, propertyName: string) => void {
   return function (object: object, propertyName: string): void {
@@ -18,7 +17,7 @@ export function MinDateISO(minYears: number): (object: object, propertyName: str
             const [constraintMinYears] = args.constraints
             const currentDate = new Date()
             const minDate = new Date(currentDate)
-            const objectInstance = args.object as { type: string }
+            const objectInstance = <{ type: string }>args.object
             const type = objectInstance.type
 
             if (!isValidISODate(value)) {
@@ -38,7 +37,7 @@ export function MinDateISO(minYears: number): (object: object, propertyName: str
         },
         defaultMessage(args: ValidationArguments): string {
           const [constraintMinYears] = args.constraints
-          const objectInstance = args.object as { type: string }
+          const objectInstance = <{ type: string }>args.object
           const type = objectInstance.type
 
           if (!isValidISODate(args.value)) {
@@ -53,4 +52,3 @@ export function MinDateISO(minYears: number): (object: object, propertyName: str
     })
   }
 }
-

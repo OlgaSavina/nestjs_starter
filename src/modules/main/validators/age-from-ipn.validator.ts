@@ -43,7 +43,7 @@ export class AgeFromIPNConstraint implements ValidatorConstraintInterface {
     }
   }
 
-  defaultMessage() {
+  defaultMessage(): string {
     return `Age calculated from IPN does not match provided age`
   }
 }

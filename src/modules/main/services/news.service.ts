@@ -62,16 +62,6 @@ export class NewsService {
       )
     }
 
-    /* if (searchTerm) {
-      newsQuery.andWhere(
-        new Brackets((qb) => {
-          qb.where('news.name LIKE :searchTerm', { searchTerm: `%${searchTerm}%` }).orWhere(
-            'news.description LIKE :searchTerm',
-            { searchTerm: `%${searchTerm}%` },
-          )
-        }),
-      )
-    }*/
 
     if (publishedAfter) {
       const afterDate = moment(publishedAfter).toDate()
