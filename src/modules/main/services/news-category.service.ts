@@ -60,7 +60,7 @@ export class NewsCategoryService {
     return newsCategory
   }
 
-  async updateNewsCategory(translationId: string, newsCategoryUpdateDto: NewsCategoryUpdateDto): Promise<void> {
+  async updateNewsCategory(translationId: string, newsCategoryUpdateDto: NewsCategoryUpdateDto)/*: Promise<void> */{
     const newsCategory = await this.getNewsCategoryById(translationId)
 
     if (!newsCategory) {
@@ -84,9 +84,10 @@ export class NewsCategoryService {
         await this.newsCategoryTranslationRepository.create(translation)
       }
     }
+    return { message: 'News updated successfully' };
   }
 
-  async deleteNewsCategory(translationId: string): Promise<void> {
+  async deleteNewsCategory(translationId: string)/*: Promise<void>*/ {
     const newsCategory = await this.getNewsCategoryById(translationId)
 
     if (!newsCategory) {
@@ -94,6 +95,7 @@ export class NewsCategoryService {
     }
 
     await this.newsCategoryRepository.remove(newsCategory)
+    return { message: 'News deleted successfully' };
   }
 
   async getAll(): Promise<NewsCategoryEntity[]> {

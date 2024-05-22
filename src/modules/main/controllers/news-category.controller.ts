@@ -56,8 +56,8 @@ export class NewsCategoryController {
   @ApiOperation({ summary: 'Delete a news category' })
   @ApiResponse({ status: 200, description: 'OK' })
   @ApiResponse({ status: 404, description: 'Not found' })
-  deleteNews(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<void> {
-    return this.newsCategoryService.deleteNewsCategory(id)
+  deleteNews(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string)/*: Promise<void> */{
+    return  this.newsCategoryService.deleteNewsCategory(id)
   }
 
   @Put('item/:id')
@@ -67,7 +67,7 @@ export class NewsCategoryController {
   async updateChat(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() newsCategoryUpdateDto: NewsCategoryUpdateDto,
-  ): Promise<void> {
-    return await this.newsCategoryService.updateNewsCategory(id, newsCategoryUpdateDto)
+  )/*: Promise<void>*/ {
+    return { data: await this.newsCategoryService.updateNewsCategory(id, newsCategoryUpdateDto)}
   }
 }

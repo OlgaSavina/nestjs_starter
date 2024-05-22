@@ -40,6 +40,8 @@ export class NewsController {
     @Query('newsCategory') newsCategory?: string,
     @Query('pageSize') pageSize?: number,
     @Query('page') page?: number,
+    @Query('sortColumn') sortColumn?: string,
+    @Query('sortDirection') sortDirection?: 'ASC' | 'DESC',
   ): Promise<{ data: NewsEntity[]; meta: object }> {
     if (publishedBefore && !moment(publishedBefore, 'YYYY-MM-DD', true).isValid()) {
       throw new BadRequestException('Invalid date format. Use YYYY-MM-DD.')
@@ -49,7 +51,7 @@ export class NewsController {
       throw new BadRequestException('Invalid date format. Use YYYY-MM-DD.')
     }
 
-    return await this.newsService.getAll(searchTerm, publishedBefore, publishedAfter, newsCategory, pageSize, page)
+    return await this.newsService.getAll(searchTerm, sortColumn, sortDirection, publishedBefore, publishedAfter, newsCategory, pageSize, page)
   }
 
   @Get('item/:id')
@@ -67,14 +69,14 @@ export class NewsController {
   async createNews(@Body() newsCreateDto: NewsCreateDto): Promise<any> {
     const createdNews = await this.newsService.createNews(newsCreateDto)
 
-    return { ...createdNews, translationList: newsCreateDto.translationList }
+    return {...createdNews, translationList: newsCreateDto.translationList }
   }
 
   @Delete('item/:id')
   @ApiOperation({ summary: 'Delete a news' })
   @ApiResponse({ status: 200, description: 'OK' })
   @ApiResponse({ status: 404, description: 'Not found' })
-  deleteNews(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<void> {
+  deleteNews(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return this.newsService.deleteNews(id)
   }
 
@@ -85,7 +87,7 @@ export class NewsController {
   async updateChat(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() newsUpdateDto: NewsUpdateDto,
-  ): Promise<void> {
-    return await this.newsService.updateNews(id, newsUpdateDto)
+  )/*: Promise<void> */{
+    return{ data: await this.newsService.updateNews(id, newsUpdateDto)}
   }
 }

@@ -41,6 +41,8 @@ export class NewsService {
 
   async getAll(
     searchTerm?: string,
+    sortColumn: string = '',
+    sortDirection: 'ASC' | 'DESC'= 'ASC',
     publishedBefore?: string,
     publishedAfter?: string,
     newsCategory?: string,
@@ -61,8 +63,6 @@ export class NewsService {
         }),
       )
     }
-
-
     if (publishedAfter) {
       const afterDate = moment(publishedAfter).toDate()
 
@@ -73,6 +73,11 @@ export class NewsService {
       const beforeDate = moment(publishedBefore).toDate()
 
       newsQuery.andWhere('news.publishedAt <= :publishedBefore', { publishedBefore: beforeDate })
+    }
+
+
+    if (sortColumn && sortDirection) {
+      newsQuery.orderBy(`news.${sortColumn}`, sortDirection);
     }
 
     newsQuery
@@ -97,7 +102,7 @@ export class NewsService {
     return { data: newsList, meta: { total } }
   }
 
-  async updateNews(translationId: string, newsUpdateDto: NewsUpdateDto): Promise<void> {
+  async updateNews(translationId: string, newsUpdateDto: NewsUpdateDto)/*: Promise<void>*/ {
     const news = await this.getNewsById(translationId)
 
     if (!news) {
@@ -121,8 +126,10 @@ export class NewsService {
         await this.newsTranslationRepository.update({ id: translation.id }, { title: translation.title })
       } else {
         await this.newsTranslationRepository.create(translation)
+        
       }
     }
+    return { message: 'News updated successfully' };
   }
 
   async createNews(newsCreateDto: NewsCreateDto): Promise<NewsEntity> {
@@ -140,10 +147,10 @@ export class NewsService {
 
     await this.newsTranslationRepository.save(translations)
 
-    return news
+    return  news
   }
 
-  async deleteNews(translationId: string): Promise<void> {
+  async deleteNews(translationId: string)/*: Promise<void>*/ {
     const news = await this.getNewsById(translationId)
 
     if (!news) {
@@ -151,5 +158,7 @@ export class NewsService {
     }
 
     await this.newsRepository.remove(news)
+    return { message: 'News deleted successfully' };
+    
   }
 }
